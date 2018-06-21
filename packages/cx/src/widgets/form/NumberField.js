@@ -4,14 +4,13 @@ import {Format} from '../../ui/Format';
 import {Culture} from '../../ui/Culture';
 import {StringTemplate} from '../../data/StringTemplate';
 import {tooltipParentWillReceiveProps, tooltipParentWillUnmount, tooltipMouseMove, tooltipMouseLeave, tooltipParentDidMount} from '../overlay/tooltip-ops';
-import {stopPropagation, preventDefault} from '../../util/eventCallbacks';
+import {stopPropagation} from '../../util/eventCallbacks';
 import {Icon} from '../Icon';
 import {Localization} from '../../ui/Localization';
 import ClearIcon from '../icons/clear';
 import {isString} from '../../util/isString';
 import {isNumber} from '../../util/isNumber';
 import {isDefined} from '../../util/isDefined';
-import {isArray} from '../../util/isArray';
 
 import {enableCultureSensitiveFormatting} from "../../ui/Format";
 enableCultureSensitiveFormatting();
@@ -340,15 +339,17 @@ class Input extends VDOM.Component {
             }
          }
 
-         let fmt = data.format;
+         let culture = Culture.getNumberCulture();
 
+         if (change == 'change' && this.input.selectionStart == this.input.selectionEnd && e.target.value[this.input.selectionEnd - 1] == culture.decimalSeparator) {
+            //e.preventDefault();
+            return;
+         }
+
+         let fmt = data.format;
          let formatted = Format.value(value, fmt);
          //re-parse to avoid differences between formatted value and value in the store
-         let culture = Culture.getNumberCulture();
          value = culture.parse(formatted) * data.scale + data.offset;
-
-         if (change == 'input' && this.input.selectionStart == this.input.selectionEnd && e.target.value[this.input.selectionEnd - 1] == culture.decimalSeparator)
-            return;
 
          if (change != 'blur'
             && (e.target.value[e.target.value.length - 1] != '.' && e.target.value[e.target.value.length - 1] != ',')
