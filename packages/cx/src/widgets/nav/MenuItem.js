@@ -1,4 +1,5 @@
 import {Widget, VDOM} from '../../ui/Widget';
+import {Instance} from '../../ui/Instance';
 import {Cx} from '../../ui/Cx';
 import {HtmlElement} from '../HtmlElement';
 import {findFirstChild, isFocusable, isSelfOrDescendant, closest, isFocusedDeep, isFocused} from '../../util/DOM';
@@ -129,7 +130,7 @@ class MenuItemComponent extends VDOM.Component {
    getDropdown() {
       let {horizontal, widget, parentPositionChangeEvent} = this.props.instance;
       if (!this.dropdown && widget.dropdown) {
-         this.dropdown = Widget.create(Dropdown, {
+         let dropdown = Widget.create(Dropdown, {
             matchWidth: false,
             placementOrder: horizontal ? 'down-right down down-left up-right up up-left' : 'right-down right right-up left-down left left-up',
             trackScroll: true,
@@ -144,6 +145,9 @@ class MenuItemComponent extends VDOM.Component {
                this.validateDropdownPosition = cb;
             }
          });
+
+         this.dropdown = new Instance(dropdown, "dropdown", this.props.instance);
+         this.dropdown.setStore(this.props.instance.store);
       }
       return this.dropdown;
    }
@@ -154,7 +158,7 @@ class MenuItemComponent extends VDOM.Component {
       let {widget} = instance;
       let {CSS, baseClass} = widget;
       let dropdown = this.state.dropdownOpen
-         && <Cx widget={this.getDropdown()} options={{name: 'submenu'}} parentInstance={instance}/>;
+         && <Cx instance={this.getDropdown()} options={{name: 'submenu'}} s/>;
 
       let arrow = data.arrow && <DropdownIcon className={CSS.element(baseClass, 'arrow')}/>;
 
@@ -398,5 +402,8 @@ class MenuItemComponent extends VDOM.Component {
 
       if (this.offParentPositionChange)
          this.offParentPositionChange();
+
+      if (this.dropdown)
+         this.dropdown.destroy();
    }
 }

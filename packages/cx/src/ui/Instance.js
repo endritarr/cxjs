@@ -14,11 +14,12 @@ import {isArray} from '../util/isArray';
 import {isObject} from '../util/isObject';
 
 export class Instance {
-   constructor(widget, key) {
+   constructor(widget, key, parent) {
       this.widget = widget;
       this.key = key;
       this.id = String(++instanceId);
       this.cached = {};
+      this.parent = parent;
    }
 
    setStore(store) {
@@ -543,8 +544,7 @@ export class InstanceCache {
 
 
       if (!instance || (!instance.visible && (instance.widget.controller || instance.widget.onInit))) {
-         instance = new Instance(widget, k);
-         instance.parent = this.parent;
+         instance = new Instance(widget, k, this.parent);
          this.children[k] = instance;
       }
       if (instance.store !== store)
