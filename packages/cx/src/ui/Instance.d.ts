@@ -13,7 +13,7 @@ export class Instance {
    controller: any;
    parentOptions: any;
 
-   constructor(widget: Widget, key: number, parent?: Instance);
+   constructor(widget: Widget, key: string | number, parent?: Instance, store?: View);
 
    setStore(store: View) : void;
 

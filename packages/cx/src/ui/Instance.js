@@ -14,12 +14,13 @@ import {isArray} from '../util/isArray';
 import {isObject} from '../util/isObject';
 
 export class Instance {
-   constructor(widget, key, parent) {
+   constructor(widget, key, parent, store) {
       this.widget = widget;
       this.key = key;
       this.id = String(++instanceId);
       this.cached = {};
       this.parent = parent;
+      this.store = store;
    }
 
    setStore(store) {

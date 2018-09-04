@@ -27,7 +27,7 @@ export class Cx extends VDOM.Component {
          }
 
          if (!this.store)
-            throw new Error('Cx component requires store.');
+            throw new Error('Cx component requires a store.');
       }
 
       if (props.subscribe) {
@@ -48,14 +48,25 @@ export class Cx extends VDOM.Component {
       }
    }
 
+   getInstance() {
+      if (this.props.instance)
+         return this.props.instance;
+
+      if (this.instance)
+         return this.instance;
+
+      if (this.widget && this.parentInstance)
+         return this.instance = new Instance(this.widget, 0, this.parentInstance, this.store);
+
+      throw new Error("Could not resolve a widget instance in the Cx component.");
+   }
+
    render() {
       if (!this.widget)
          return null;
 
-      let instance = this.props.instance || this.parentInstance.getChild(this.context, this.widget, null, this.store);
-
       return <CxContext
-         instance={instance}
+         instance={this.getInstance()}
          flags={this.flags}
          options={this.props.options}
          buster={++this.renderCount}

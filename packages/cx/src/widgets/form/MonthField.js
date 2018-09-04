@@ -1,4 +1,5 @@
 import {Widget, VDOM, getContent} from '../../ui/Widget';
+import {Instance} from '../../ui/Instance';
 import {Cx} from '../../ui/Cx';
 import {Field, getFieldTooltip, autoFocus} from './Field';
 import {MonthPicker} from './MonthPicker';
@@ -18,7 +19,6 @@ import {
 } from '../overlay/tooltip-ops';
 import {stopPropagation} from '../../util/eventCallbacks';
 import {Icon} from '../Icon';
-import CalendarIcon from '../icons/calendar';
 import DropdownIcon from '../icons/drop-down';
 import ClearIcon from '../icons/clear';
 import {KeyCode} from '../../util';
@@ -245,19 +245,19 @@ class MonthInput extends VDOM.Component {
       };
    }
 
-   getDropdown() {
-      if (this.dropdown)
-         return this.dropdown;
+   getDropdownInstance() {
+      if (this.dropdownInstance)
+         return this.dropdownInstance;
 
-      let {widget, lastDropdown} = this.props.instance;
+      let {instance} = this.props;
+      let {widget, lastDropdown, store} = instance;
 
-      var dropdown = {
+      var dropdown = Dropdown.create({
          scrollTracking: true,
          inline: !isTouchDevice() || !!lastDropdown,
          placementOrder: 'down down-left down-right up up-left up-right right right-up right-down left left-up left-down',
          touchFriendly: true,
          ...widget.dropdownOptions,
-         type: Dropdown,
          relatedElement: this.input,
          items: {
             type: MonthPicker,
@@ -277,9 +277,10 @@ class MonthInput extends VDOM.Component {
          },
          constrain: true,
          firstChildDefinesWidth: true
-      };
+      });
 
-      return this.dropdown = Widget.create(dropdown);
+
+      return this.dropdownInstance = new Instance(dropdown, "dropdown", instance, store);
    }
 
    render() {
@@ -321,7 +322,7 @@ class MonthInput extends VDOM.Component {
 
       var dropdown = false;
       if (this.state.dropdownOpen)
-         dropdown = <Cx widget={this.getDropdown()} parentInstance={instance} options={{name: 'datefield-dropdown'}}/>;
+         dropdown = <Cx instance={this.getDropdownInstance()} options={{name: 'datefield-dropdown'}}/>;
 
       let empty = this.input ? !this.input.value : data.empty;
 
@@ -498,6 +499,7 @@ class MonthInput extends VDOM.Component {
 
    componentWillUnmount() {
       tooltipParentWillUnmount(this.props.instance);
+      this.dropdownInstance && this.dropdownInstance.destroy();
    }
 
    onChange(e, eventType) {

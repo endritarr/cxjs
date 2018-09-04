@@ -1,4 +1,5 @@
 import {Widget, VDOM, getContent} from '../../ui/Widget';
+import {Instance} from '../../ui/Instance';
 import {Cx} from '../../ui/Cx';
 import {Field, getFieldTooltip} from './Field';
 import {Dropdown} from '../overlay/Dropdown';
@@ -91,13 +92,14 @@ class ColorInput extends VDOM.Component {
       };
    }
 
-   getDropdown() {
-      if (this.dropdown)
-         return this.dropdown;
+   getDropdownInstance() {
+      if (this.dropdownInstance)
+         return this.dropdownInstance;
 
-      let {widget, lastDropdown} = this.props.instance;
+      let {instance} = this.props;
+      let {widget, lastDropdown, store} = instance;
 
-      let dropdown = {
+      let dropdown = Dropdown.create({
          scrollTracking: true,
          autoFocus: true, //put focus on the dropdown to prevent opening the keyboard
          focusable: true,
@@ -105,7 +107,6 @@ class ColorInput extends VDOM.Component {
          touchFriendly: true,
          placementOrder: ' down down-left down-right up up-left up-right right right-up right-down left left-up left-down',
          ...widget.dropdownOptions,
-         type: Dropdown,
          relatedElement: this.input,
          items: {
             type: ColorPicker,
@@ -125,9 +126,9 @@ class ColorInput extends VDOM.Component {
          },
          firstChildDefinesHeight: true,
          firstChildDefinesWidth: true
-      };
+      });
 
-      return this.dropdown = Widget.create(dropdown);
+      return this.dropdownInstance = new Instance(dropdown, "dropdown", instance, store);
    }
 
    render() {
@@ -164,7 +165,7 @@ class ColorInput extends VDOM.Component {
 
       let dropdown = false;
       if (this.state.dropdownOpen)
-         dropdown = <Cx widget={this.getDropdown()} parentInstance={instance} options={{name: 'colorfield-dropdown'}}/>;
+         dropdown = <Cx widget={this.getDropdownInstance()} parentInstance={instance} options={{name: 'colorfield-dropdown'}}/>;
 
       let empty = this.input ? !this.input.value : data.empty;
 
@@ -335,6 +336,7 @@ class ColorInput extends VDOM.Component {
 
    componentWillUnmount() {
       tooltipParentWillUnmount(this.props.instance);
+      this.dropdownInstance && this.dropdownInstance.destroy();
    }
 
    onClearClick(e) {

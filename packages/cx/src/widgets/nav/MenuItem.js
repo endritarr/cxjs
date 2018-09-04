@@ -127,12 +127,15 @@ class MenuItemComponent extends VDOM.Component {
          || state.dropdownOpen; //always render if dropdown is open as we don't know if dropdown contents has changed
    }
 
-   getDropdown() {
-      let {horizontal, widget, parentPositionChangeEvent} = this.props.instance;
-      if (!this.dropdown && widget.dropdown) {
+   getDropdownInstance() {
+      let {instance} = this.props;
+      let {horizontal, widget, parentPositionChangeEvent, store} = instance;
+      if (widget.dropdown && !this.dropdownInstance) {
          let dropdown = Widget.create(Dropdown, {
             matchWidth: false,
-            placementOrder: horizontal ? 'down-right down down-left up-right up up-left' : 'right-down right right-up left-down left left-up',
+            placementOrder: horizontal
+               ? 'down-right down down-left up-right up up-left'
+               : 'right-down right right-up left-down left left-up',
             trackScroll: true,
             inline: true,
             ...widget.dropdownOptions,
@@ -145,11 +148,9 @@ class MenuItemComponent extends VDOM.Component {
                this.validateDropdownPosition = cb;
             }
          });
-
-         this.dropdown = new Instance(dropdown, "dropdown", this.props.instance);
-         this.dropdown.setStore(this.props.instance.store);
+         this.dropdownInstance = new Instance(dropdown, "dropdown", instance, store);
       }
-      return this.dropdown;
+      return this.dropdownInstance;
    }
 
    render() {
@@ -158,7 +159,7 @@ class MenuItemComponent extends VDOM.Component {
       let {widget} = instance;
       let {CSS, baseClass} = widget;
       let dropdown = this.state.dropdownOpen
-         && <Cx instance={this.getDropdown()} options={{name: 'submenu'}} s/>;
+         && <Cx instance={this.getDropdownInstance()} options={{name: 'submenu'}} />;
 
       let arrow = data.arrow && <DropdownIcon className={CSS.element(baseClass, 'arrow')}/>;
 
@@ -403,7 +404,7 @@ class MenuItemComponent extends VDOM.Component {
       if (this.offParentPositionChange)
          this.offParentPositionChange();
 
-      if (this.dropdown)
-         this.dropdown.destroy();
+      if (this.dropdownInstance)
+         this.dropdownInstance.destroy();
    }
 }
